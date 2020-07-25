@@ -118,6 +118,7 @@ bool HBasicBlockBuilder::CreateBranchTargets() {
 }
 
 void HBasicBlockBuilder::ConnectBasicBlocks() {
+  // Jekton: 这里设置 block 的值后，下面就会rang entry block 指向第一个 block
   HBasicBlock* block = graph_->GetEntryBlock();
   graph_->AddBlock(block);
 
@@ -128,6 +129,7 @@ void HBasicBlockBuilder::ConnectBasicBlocks() {
     // Check if this dex_pc address starts a new basic block.
     HBasicBlock* next_block = GetBlockAt(dex_pc);
     if (next_block != nullptr) {
+      // Jekton: block 是 dex 直线顺序上的上一个 inst 的 basic block
       if (block != nullptr) {
         // Last instruction did not end its basic block but a new one starts here.
         // It must have been a block falling through into the next one.
@@ -138,7 +140,10 @@ void HBasicBlockBuilder::ConnectBasicBlocks() {
       graph_->AddBlock(block);
     }
 
+    // Jekton: block 是当前指令所在的 basic block
     if (block == nullptr) {
+      // Jekton: 当我们在基本块的内部迭代指令，并遇到一个 branch/return/throw 时，基本块结束
+      // （block 变量清空）。再下一条指令如果不是某个分支的 target，则该 block 会是一个 dead block
       // Ignore dead code.
       continue;
     }
@@ -171,6 +176,7 @@ void HBasicBlockBuilder::ConnectBasicBlocks() {
         }
       }
     } else {
+      // 这样一来，block 便不会被置空，我们继续迭代该 block 内部的指令
       // Remaining code only applies to instructions which end their basic block.
       continue;
     }
