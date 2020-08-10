@@ -78,6 +78,8 @@ void HGraph::FindBackEdges(ArenaBitVector* visited) {
       uint32_t successor_id = successor->GetBlockId();
       if (visiting.IsBitSet(successor_id)) {
         DCHECK(ContainsElement(worklist, successor));
+        // Jekton: back edge 存放在被指向的那个节点
+        // 只考虑 natural loop 的情况，这个 successor 就是 loop header
         successor->AddBackEdge(current);
       } else if (!visited->IsBitSet(successor_id)) {
         visited->SetBit(successor_id);
@@ -126,6 +128,7 @@ void HGraph::RemoveDeadBlocks(const ArenaBitVector& visited) {
     if (!visited.IsBitSet(i)) {
       HBasicBlock* block = blocks_[i];
       if (block == nullptr) continue;
+      // Jekton: 没有人会指向 dead block，所以不用处理 predecessors
       // We only need to update the successor, which might be live.
       for (HBasicBlock* successor : block->GetSuccessors()) {
         successor->RemovePredecessor(block);
@@ -411,6 +414,7 @@ void HGraph::SimplifyCFG() {
   for (size_t block_id = 0u, end = blocks_.size(); block_id != end; ++block_id) {
     HBasicBlock* block = blocks_[block_id];
     if (block == nullptr) continue;
+    // Jekton: critical edges: 源结点有多个 successor，目标结点有多个 predecessor
     if (block->GetSuccessors().size() > 1) {
       // Only split normal-flow edges. We cannot split exceptional edges as they
       // are synthesized (approximate real control flow), and we do not need to
