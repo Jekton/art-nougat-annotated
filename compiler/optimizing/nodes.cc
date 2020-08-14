@@ -251,10 +251,13 @@ void HGraph::ComputeDominanceInformation() {
       worklist.pop_back();
     } else {
       HBasicBlock* successor = current->GetSuccessors()[successors_visited[current_id]++];
+      // Jekton: 先假设直接前驱就是某个节点的 dominator，在遇到第二个的时候，更新 dominator 为旧 dominator
+      // 和当前 predecessor 的公共 dominator
       UpdateDominatorOfSuccessor(current, successor);
 
       // Once all the forward edges have been visited, we know the immediate
       // dominator of the block. We can then start visiting its successors.
+      // Jekton: back-edge 肯定不会支配 successor 这个结点，所以这里减掉他们
       if (++visits[successor->GetBlockId()] ==
           successor->GetPredecessors().size() - successor->NumberOfBackEdges()) {
         reverse_post_order_.push_back(successor);
@@ -329,6 +332,8 @@ void HGraph::SplitCriticalEdge(HBasicBlock* block, HBasicBlock* successor) {
     // If we split at a back edge boundary, make the new block the back edge.
     HLoopInformation* info = successor->GetLoopInformation();
     if (info->IsBackEdge(*block)) {
+      // Jekton: split 后 block 不再指向 successor，此时这条边不再是 back edge
+      // 对于 split 后的图，新插入的 new_block -> successor 会变成 back edge
       info->RemoveBackEdge(block);
       info->AddBackEdge(new_block);
     }
@@ -352,6 +357,7 @@ void HGraph::SimplifyLoop(HBasicBlock* header) {
       HBasicBlock* predecessor = header->GetPredecessors()[pred];
       if (!info->IsBackEdge(*predecessor)) {
         predecessor->ReplaceSuccessor(header, pre_header);
+        // Jekton: predecessor 会移除后，会导致后面的 index 都减 1
         pred--;
       }
     }

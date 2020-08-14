@@ -58,6 +58,8 @@ class CommonDominator {
       block2 = block2->GetDominator();
       DCHECK(block2 != nullptr);
     }
+    // Jekton: 只要两个结点存在公共祖先，从他们到祖先的路劲上，最后一段一定是重合的。
+    // 所以只要把 chain_length 对齐，再一步步回退，就能找到公共祖先
     // Now run up the chain until we hit the common dominator.
     while (block != block2) {
       --chain_length;
@@ -75,6 +77,7 @@ class CommonDominator {
   }
 
  private:
+  // Jekton: block 在 dominator-tree 的深度
   static size_t ChainLength(HBasicBlock* block) {
     size_t result = 0;
     while (block != nullptr) {
