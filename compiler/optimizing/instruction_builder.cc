@@ -133,6 +133,7 @@ void HInstructionBuilder::InitializeBlockLocals() {
       }
 
       if (one_predecessor_has_no_value) {
+        // Jekton: Java 保证了变量在使用前一定会赋值。如果某个变量在某条路径上没有被定值，则他一定不会被使用
         // If one predecessor has no value for this local, we trust the verifier has
         // successfully checked that there is a store dominating any read after this block.
         continue;

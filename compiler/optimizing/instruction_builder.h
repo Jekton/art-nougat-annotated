@@ -278,6 +278,8 @@ class HInstructionBuilder : public ValueObject {
   HBasicBlockBuilder* block_builder_;
   SsaBuilder* ssa_builder_;
 
+  // Jekton: block id 作为第一层的 index，得到的 ArenaVector<HInstruction*> 是对应的 block
+  // 里变量的在该 block 的定值。每个 Arena<HInstruction*> 的长度都是 graph_->GetNumberOfVRegs()
   ArenaVector<ArenaVector<HInstruction*>> locals_for_;
   HBasicBlock* current_block_;
   ArenaVector<HInstruction*>* current_locals_;
