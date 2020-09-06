@@ -1348,6 +1348,8 @@ ImageSpace* ImageSpace::Init(const char* image_filename,
   {
     TimingLogger::ScopedTiming timing("CreateImageBitmap", &logger);
     bitmap.reset(
+      // Jekton: bitmap section 是用来管理 object section 中对象的，所以这里用 image_bitmap_map，
+      // 最后一个参数 heap_capacity 是 image_objects.End()
       accounting::ContinuousSpaceBitmap::CreateFromMemMap(
           bitmap_name,
           image_bitmap_map.release(),
