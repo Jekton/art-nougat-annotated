@@ -133,6 +133,8 @@ void BumpPointerSpace::AssertAllThreadLocalBuffersAreRevoked() {
 
 void BumpPointerSpace::UpdateMainBlock() {
   DCHECK_EQ(num_blocks_, 0U);
+  // Jekton: Size = End() - Begin()
+  // main_block_size_ 是当前 space 已分配出去的对象的总大小
   main_block_size_ = Size();
 }
 

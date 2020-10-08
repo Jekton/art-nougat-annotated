@@ -68,6 +68,18 @@ static void PopLocalReferences(uint32_t saved_local_ref_cookie, Thread* self)
   if (UNLIKELY(env->check_jni)) {
     env->CheckNoHeldMonitors();
   }
+  // Jekton:
+  // env->local_ref_cookie 是进入 JNI 方法前的 cookie。进入 JNI 方法后，每次添加 local ref
+  // 使用的都是 env->local_ref_cookie。这样一来，搜索 locals 里空闲位置的时候，就会从上一个函数
+  // 的结束位置开始搜索。
+  // 方法结束后，把 locals 的 segment state 设置为 env->local_ref_cookie，locals 也就恢复
+  // 到了进入 JNI 前的状态。
+  // saved_local_ref_cookie 是上一个 JNI 方法执行时使用的 cookie，这里也需要恢复它。
+  // 一般情况下，local ref 的分配是线性的（从 parts.topIndex 开始分配），方法结束后 cookies 恢复，
+  // 也就释放了相关的 refs。
+  // 但是，如果使用了 ens->DeleteLocalRef 使得中间带有空洞，后面分配的对象存放在空洞里时，就不一定能
+  // 及时释放对象了。（比方说有 JNI 方法 A，以及随后的某个 JNI 方法 B。A 调用了 DeleteLocalRef，
+  // B 分配的 local-ref 就会放在这个空洞里；在 B 返回后对象仍旧存活）
   env->locals.SetSegmentState(env->local_ref_cookie);
   env->local_ref_cookie = saved_local_ref_cookie;
   self->PopHandleScope();

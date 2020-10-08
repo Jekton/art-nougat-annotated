@@ -680,6 +680,9 @@ void Monitor::Wait(Thread* self, int64_t ms, int32_t ns,
 
   // Re-acquire the monitor and lock.
   Lock(self);
+  // Jekton: monitor_lock_ 是用来保护 Monitor 内部的数据结构的，每次修改都要锁住；
+  // 所以也就有了后面的那个 monitor_lock_.Unlock(self)。
+  // 而前一行的 Lock(self) 则是 Java 语义上的上锁
   monitor_lock_.Lock(self);
   self->GetWaitMutex()->AssertNotHeld(self);
 

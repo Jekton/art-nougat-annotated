@@ -202,6 +202,10 @@ void MarkSweep::PausePhase() {
     RevokeAllThreadLocalAllocationStacks(self);
   }
   heap_->PreSweepingGcVerification(this);
+  // Jekton: 比方说，我们现在 JNI 持有一个 weak global A，A 指向的引用即将被清除。如果不禁止 system weak，
+  // PausePhase 结束后，A 被清除前，应用可以创建一个新的 weak global B，并且 B 可能没有被正确处理，
+  // 导致通过 B 会返回一个被释放了的对象。
+  // 其他 system weak 的情况未详细了解
   // Disallow new system weaks to prevent a race which occurs when someone adds a new system
   // weak before we sweep them. Since this new system weak may not be marked, the GC may
   // incorrectly sweep it. This also fixes a race where interning may attempt to return a strong

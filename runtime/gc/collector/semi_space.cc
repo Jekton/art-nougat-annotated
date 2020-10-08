@@ -73,6 +73,7 @@ void SemiSpace::BindBitmaps() {
         if (collect_from_space_only_) {
           // Bind the bitmaps of the main free list space and the non-moving space we are doing a
           // bump pointer space only collection.
+          // Jekton: bump pointer space 没有 mark bitmap 和 live bitmap
           CHECK(space == GetHeap()->GetPrimaryFreeListSpace() ||
                 space == GetHeap()->GetNonMovingSpace());
         }
